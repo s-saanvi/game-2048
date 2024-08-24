@@ -4,3 +4,7 @@
 ## To play the game use up, 
 ## down, right and
 ## left arrows or use mouse to direct the tiles
+## here's the link for the site
+ https://s-saanvi.github.io/game-2048/
+
+## do support & play
