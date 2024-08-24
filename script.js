@@ -129,4 +129,143 @@ var gameObj = {
       }
         return can;
     },
-    
+    move: function (x,y) {
+        var can=0;
+        can=this.clear(x,y)?1:0;
+        var add=0;
+        for(var i=0;i<4;i++){
+            for(var j=0;j<3;j++){
+                var objInThisWay=null;
+                var objInThisWay2=null;
+                switch (""+x+y){
+                    case '00':{
+                        objInThisWay=this.stage[i][j];
+                        objInThisWay2=this.stage[i][j+1];break;
+                    }
+                    case '10':{
+                        objInThisWay=this.stage[j][i];
+                        objInThisWay2=this.stage[j+1][i];break;
+                    }
+
+                    case '11':{
+                        objInThisWay=this.stage[3-j][i];
+                        objInThisWay2=this.stage[2-j][i];break;
+                    }
+                    case '01':{
+                        objInThisWay=this.stage[i][3-j];
+                        objInThisWay2=this.stage[i][2-j];break;
+                    }
+                }
+                if(objInThisWay2.boxObj&&objInThisWay.boxObj.value==objInThisWay2.boxObj.value){
+                  add+=this.addTo(objInThisWay2,objInThisWay);
+                    this.clear(x,y);
+//                    j++;
+                    can=1;
+                }
+//                console.log(this.stage);
+            }
+        }
+        if(add){
+            var addscore=document.getElementById('addScore');
+            addscore.innerText="+"+add;
+            addscore.textContent="+"+add;
+            addscore.className="show";
+            setTimeout(function(){
+                addscore.className="hide";
+            },500);
+        }
+        if(can){
+            this.newBox();
+        }
+        if(this.isEnd()){
+            this.gameOver();
+        }
+    },
+
+    inti: null
+}
+var controller = function () {
+    var startX = 0;
+    var startY = 0;
+    var ready = 0;
+    this.start = function (x, y) {
+        ready = 1;
+        startX = x;
+        startY = y;
+    };
+    this.move = function (x, y) {
+        if (x - startX > 100 && ready) {
+            gameObj.move(0, 1);
+            ready = 0;
+        } else if (startX - x > 100 && ready) {
+            gameObj.move(0, 0);
+            ready = 0;
+        }
+        else if (startY - y > 100 && ready) {
+            gameObj.move(1, 0);
+            ready = 0;
+        }
+        else if (y - startY > 100 && ready) {
+            gameObj.move(1, 1);
+            ready = 0;
+        }
+    }
+    this.end = function (x, y) {
+        ready = 0;
+    }
+    return {
+        start: this.start,
+        move: this.move,
+        end: this.end
+    }
+}();
+function disableSelection(target){
+    if (typeof target.onselectstart!="undefined") //IE route
+        target.onselectstart=function(){return false}
+    else if (typeof target.style.MozUserSelect!="undefined") //Firefox route
+        target.style.MozUserSelect="none"
+    else //All other route (ie: Opera)
+        target.onmousedown=function(){return false}
+    target.style.cursor = "default"
+}
+window.onload = function () {
+    gameObj.intiStage();
+    gameObj.newBox();
+//    gameObj.newBox();
+    var stage = document.getElementById('stage');
+    document.onmousedown = function (e) {
+        var event = e || window.event;
+        var obj = event.target || event.srcElement;
+        var x = event.clientX;
+        var y = event.clientY;
+        controller.start(x, y);
+    }
+    document.onmousemove = function (e) {
+        var event = e || window.event;
+        var obj = event.target || event.srcElement;
+        var x = event.clientX;
+        var y = event.clientY;
+        controller.move(x, y);
+    }
+    document.onmouseup = function (e) {
+        var event = e || window.event;
+        var obj = event.target || event.srcElement;
+        var x = event.clientX;
+        var y = event.clientY;
+        controller.end(x, y);
+    }
+    function keyUp(e) {
+        var currKey=0,e=e||event;
+        currKey=e.keyCode||e.which||e.charCode;
+        var keyName = String.fromCharCode(currKey);
+        switch (currKey){
+            case 37:gameObj.move(0, 0);break;
+            case 38:gameObj.move(1, 0);break;
+            case 39:gameObj.move(0, 1);break;
+            case 40:gameObj.move(1, 1);break;
+        }
+//        alert("key code: " + currKey + " Character: " + keyName);
+    }
+    document.onkeyup = keyUp;
+//    disableSelection(document.body);
+}
